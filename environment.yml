@@ -1,0 +1,7 @@
+name: pump_calibration
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pyserial
