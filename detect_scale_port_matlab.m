@@ -4,10 +4,7 @@ function [port, matches] = detect_scale_port_matlab(cfg)
 % The scale must be in continuous output mode:
 %   F3 SEr -> S 232 -> P2 Con -> b 4800 -> 8 n 1
 
-available_ports = serialportlist('available');
-if isempty(available_ports)
-    available_ports = serialportlist('all');
-end
+available_ports = scale_available_ports_matlab();
 
 if isempty(available_ports)
     error('detect_scale_port_matlab:NoSerialPorts', ...
@@ -16,7 +13,7 @@ end
 
 matches = struct('port', {}, 'weight_g', {}, 'raw', {});
 for i = 1:numel(available_ports)
-    candidate = char(available_ports(i));
+    candidate = available_ports{i};
     fprintf('Probing %s for scale output...\n', candidate);
     [matched, reading] = probe_scale_port_matlab(candidate, cfg);
     if matched

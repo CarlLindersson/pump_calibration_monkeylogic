@@ -5,14 +5,9 @@ matched = false;
 reading = [];
 
 try
-    scale = serialport(char(port), cfg.scale_baud, ...
-        'DataBits', cfg.scale_databits, ...
-        'Parity', cfg.scale_parity, ...
-        'StopBits', cfg.scale_stopbits, ...
-        'Timeout', min(0.5, cfg.scale_probe_timeout_s));
+    scale = open_scale_serial_matlab(port, cfg, min(0.5, cfg.scale_probe_timeout_s));
     cleanup = onCleanup(@() pump_clear_scale(scale));
-    configureTerminator(scale, 'LF');
-    flush(scale, 'input');
+    flush_scale_serial_matlab(scale);
 catch
     return
 end
@@ -20,7 +15,7 @@ end
 started = tic;
 while toc(started) < cfg.scale_probe_timeout_s
     try
-        line = readline(scale);
+        line = readline_scale_serial_matlab(scale);
     catch
         continue
     end

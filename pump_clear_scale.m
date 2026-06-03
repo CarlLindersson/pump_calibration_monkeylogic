@@ -1,13 +1,22 @@
 function pump_clear_scale(scale)
-%PUMP_CLEAR_SCALE Best-effort cleanup for a MATLAB serialport object.
+%PUMP_CLEAR_SCALE Best-effort cleanup for a MATLAB scale serial object.
 
 try
-    flush(scale);
+    flush_scale_serial_matlab(scale);
 catch
 end
 
-try
-    delete(scale);
-catch
+if ~is_modern_scale_serial_matlab(scale)
+    try
+        if strcmp(get(scale, 'Status'), 'open')
+            fclose(scale);
+        end
+    catch
+    end
+
+    try
+        delete(scale);
+    catch
+    end
 end
 end

@@ -24,6 +24,7 @@ cfg.scale_timeout_s = 10;
 cfg.scale_request = '';
 cfg.scale_samples = 3;
 cfg.scale_flush_before_read = true;
+cfg.scale_require_stable = false;
 
 % Pump durations to test. goodmonkey uses milliseconds.
 cfg.durations_ms = [400 600 1000 1500 2000];
@@ -32,6 +33,9 @@ cfg.randomize_order = false;
 
 % Reward output. Set JuiceLine to the MonkeyLogic reward channel that drives
 % the pump. Leave optional fields empty to omit them from goodmonkey().
+% Set DRY_REWARD true to debug scale reading/logging without calling
+% goodmonkey or turning on the pump.
+cfg.DRY_REWARD = false;
 cfg.juiceline = 1;
 cfg.numreward = 1;
 cfg.pausetime_ms = [];

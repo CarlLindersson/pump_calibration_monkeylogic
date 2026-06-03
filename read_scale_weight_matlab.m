@@ -2,7 +2,7 @@ function reading = read_scale_weight_matlab(scale, cfg)
 %READ_SCALE_WEIGHT_MATLAB Read fresh readings from the continuous scale stream.
 
 if cfg.scale_flush_before_read
-    flush(scale, 'input');
+    flush_scale_serial_matlab(scale);
 end
 
 weights = nan(cfg.scale_samples, 1);
@@ -14,17 +14,21 @@ sample_count = 0;
 started = tic;
 while sample_count < cfg.scale_samples && toc(started) < cfg.scale_timeout_s
     if isfield(cfg, 'scale_request') && ~isempty(cfg.scale_request)
-        write(scale, uint8(cfg.scale_request), 'uint8');
+        write_scale_serial_matlab(scale, cfg.scale_request);
     end
 
     try
-        line = readline(scale);
+        line = readline_scale_serial_matlab(scale);
     catch
         continue
     end
 
     parsed = parse_scale_line_matlab(line);
     if isempty(parsed)
+        continue
+    end
+    if isfield(cfg, 'scale_require_stable') && cfg.scale_require_stable ...
+            && ~isempty(strfind(upper(parsed.status), 'US')) %#ok<STREMP>
         continue
     end
 
@@ -41,7 +45,9 @@ if 0 == sample_count
 end
 
 reading = struct();
-reading.weight_g = median(weights(1:sample_count), 'omitnan');
+valid_weights = weights(1:sample_count);
+valid_weights = valid_weights(~isnan(valid_weights));
+reading.weight_g = median(valid_weights);
 reading.n_samples = sample_count;
 reading.raw = strjoin(raw_lines(1:sample_count), ' | ');
 reading.status = statuses{sample_count};

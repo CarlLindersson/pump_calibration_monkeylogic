@@ -7,10 +7,7 @@ if ~strcmpi(configured_port, 'auto')
     return
 end
 
-available_ports = serialportlist('available');
-if isempty(available_ports)
-    available_ports = serialportlist('all');
-end
+available_ports = scale_available_ports_matlab();
 
 if isempty(available_ports)
     error('resolve_scale_port_matlab:NoSerialPorts', ...
@@ -18,16 +15,16 @@ if isempty(available_ports)
 end
 
 if isfield(cfg, 'preferred_scale_port') && ~isempty(cfg.preferred_scale_port)
-    preferred_port = string(cfg.preferred_scale_port);
-    match = strcmpi(string(available_ports), preferred_port);
+    preferred_port = char(cfg.preferred_scale_port);
+    match = strcmpi(available_ports, preferred_port);
     if any(match)
-        port = char(available_ports(find(match, 1)));
+        port = available_ports{find(match, 1)};
         return
     end
 end
 
 if isscalar(available_ports)
-    port = char(available_ports(1));
+    port = available_ports{1};
     return
 end
 
@@ -36,7 +33,7 @@ if isfield(cfg, 'auto_probe_scale_port') && cfg.auto_probe_scale_port
     return
 end
 
-port_list = strjoin(cellstr(available_ports), ', ');
+port_list = strjoin(available_ports, ', ');
 error('resolve_scale_port_matlab:AmbiguousSerialPorts', ...
     ['Multiple serial ports found: %s. Set cfg.scale_port in ' ...
     'pump_calibration_config.m to the scale port, for example ''COM7'', ' ...

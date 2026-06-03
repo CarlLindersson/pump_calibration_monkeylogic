@@ -5,10 +5,11 @@ function reading = parse_scale_line_matlab(line)
 %   GS   123.45g
 %   G S   123.45 g
 %   NT    -1.20g
+%   US,NT-      0.355 g
 
 reading = [];
 text = strtrim(char(line));
-if isempty(text) || startsWith(upper(text), 'ERR')
+if isempty(text) || strncmpi(text, 'ERR', 3)
     return
 end
 
@@ -25,15 +26,22 @@ if isnan(weight)
 end
 
 prefix = regexprep(strtrim(text(1:number_start - 1)), '\s+', '');
+if weight >= 0 && ~isempty(regexp(prefix, '[+-]$', 'once'))
+    if '-' == prefix(end)
+        weight = -weight;
+    end
+    prefix = prefix(1:end - 1);
+end
+
 suffix = strtrim(text(number_end + 1:end));
 unit = regexp(suffix, '^[A-Za-z%./0-9]+', 'match', 'once');
 if isempty(unit)
     unit = '';
 end
 
-status = '';
-if any(strcmpi(prefix, {'GS', 'NT', 'G', 'N'}))
-    status = upper(prefix);
+status = upper(prefix);
+if isempty(regexp(status, '^[A-Z,]+$', 'once'))
+    status = '';
 end
 
 reading = struct();

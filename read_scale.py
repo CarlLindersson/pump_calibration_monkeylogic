@@ -38,6 +38,11 @@ READING_RE = re.compile(
     r"(?P<weight>[-+]?\d{1,3}(?:,\d{3})*(?:\.\d+)?|[-+]?\d+(?:\.\d+)?)"
     r"\s*(?P<unit>[A-Za-z%./0-9]*)"
 )
+GENERIC_READING_RE = re.compile(
+    r"^\s*(?P<prefix>[A-Za-z,\s]*[+-]?)\s*"
+    r"(?P<weight>[-+]?\d{1,3}(?:,\d{3})*(?:\.\d+)?|[-+]?\d+(?:\.\d+)?)"
+    r"\s*(?P<unit>[A-Za-z%./0-9]*)"
+)
 
 
 @dataclass
@@ -94,6 +99,22 @@ def parse_weight_from_line(line: str) -> Reading | None:
         return None
     if text.upper().startswith("ERR"):
         return None
+
+    generic = GENERIC_READING_RE.search(text)
+    if generic:
+        prefix = re.sub(r"\s+", "", generic.group("prefix") or "")
+        sign = -1.0 if prefix.endswith("-") and not generic.group("weight").startswith("-") else 1.0
+        prefix = prefix.rstrip("+-").upper()
+        try:
+            weight = sign * float(generic.group("weight").replace(",", ""))
+            return Reading(
+                weight=weight,
+                unit=generic.group("unit") or "",
+                status=prefix if re.fullmatch(r"[A-Z,]+", prefix) else "",
+                raw=line,
+            )
+        except ValueError:
+            pass
 
     match = READING_RE.search(text)
     if match:
