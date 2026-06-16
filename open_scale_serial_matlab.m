@@ -5,7 +5,7 @@ if nargin < 3 || isempty(timeout_s)
     timeout_s = cfg.scale_timeout_s;
 end
 
-if exist('serialport', 'file')
+if has_modern_scale_serialport_matlab()
     scale = serialport(char(port), cfg.scale_baud, ...
         'DataBits', cfg.scale_databits, ...
         'Parity', cfg.scale_parity, ...
@@ -13,6 +13,12 @@ if exist('serialport', 'file')
         'Timeout', timeout_s);
     configureTerminator(scale, 'LF');
     return
+end
+
+if ~exist('serial', 'file')
+    error('open_scale_serial_matlab:NoSerialAPI', ...
+        ['Could not find MATLAB''s serialport API or the legacy serial API. ' ...
+        'Install serial support or run this script in a MATLAB version with serial communication support.']);
 end
 
 scale = serial(char(port), ...

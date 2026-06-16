@@ -88,6 +88,11 @@ First list the ports:
 scale_available_ports_matlab()
 ```
 
+If MonkeyLogic reports that it cannot find an exact case-sensitive match for
+`serialport` and points to `SerialPort.m`, that is MonkeyLogic's own serial
+class, not MATLAB's newer lowercase `serialport` API. The calibration helpers
+detect this and fall back to MATLAB's legacy `serial` API automatically.
+
 Safest option: set the scale port explicitly:
 
 ```matlab
